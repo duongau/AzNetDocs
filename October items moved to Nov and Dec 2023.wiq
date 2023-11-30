@@ -1,0 +1,27 @@
+<WorkItemQuery Version="1"><TeamFoundationServer>https://dev.azure.com/msft-skilling/</TeamFoundationServer><TeamProject>Content</TeamProject><Wiql>SELECT
+        [System.Id],
+        [System.WorkItemType],
+        [System.AssignedTo],
+        [System.Title],
+        [System.State],
+        [System.Tags],
+        [System.IterationPath],
+        [System.AreaPath]
+FROM workitems
+WHERE
+        [System.TeamProject] = @project
+        AND [System.WorkItemType] IN ('User Story')
+        AND [System.AreaPath] UNDER 'Content\Production\Infrastructure\Azure Networking'
+        AND NOT [System.State] IN ('Removed')
+        AND NOT [System.IterationPath] =  @currentIteration('[Content]\Azure Networking') - 1
+        AND (
+                EVER (
+                        [System.IterationPath] = @currentIteration('[Content]\Azure Networking')
+                )
+                AND [System.IterationPath] = @currentIteration('[Content]\Azure Networking')
+                OR [System.IterationPath] = @currentIteration('[Content]\Azure Networking') + 1
+                AND [System.ChangedDate] &gt;= @today - 30
+        )
+        AND [System.Tags] CONTAINS WORDS 'new feature'
+ORDER BY [System.Id]
+</Wiql></WorkItemQuery>
